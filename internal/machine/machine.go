@@ -87,7 +87,10 @@ func (m *Machine) Run() {
 			log.Fatal("non-existent state: ", state)
 		}
 		currentSym := m.tape[m.headIndex]
-		cmd := symbols[currentSym]
+		cmd, ok := symbols[currentSym]
+		if !ok {
+			log.Fatalf("non-existent source symbol %c for state %s", currentSym, state)
+		}
 		m.print(cmd.String())
 		m.tape[m.headIndex] = cmd.symAfter
 		switch cmd.shiftDirection {
