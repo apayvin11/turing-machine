@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	TAPE_SIZE              = 64
-	DEFAULT_HEAD_INDEX     = 14
+	TAPE_SIZE              = 48
+	DEFAULT_HEAD_INDEX     = 10
 	MAX_DEFAULT_HEAD_INDEX = TAPE_SIZE - 1
 )
 
@@ -19,9 +19,10 @@ type Machine struct {
 	commandBase map[string]map[byte]*Command
 	tape        []byte
 	headIndex   int
+	resultFile  *os.File
 }
 
-func New(alphabetPath, tapePath, commandsPath string) *Machine {
+func New(alphabetPath, tapePath, commandsPath string, resultFile *os.File) *Machine {
 	// Reading alphabet
 	alphabetSlice := readFileIntoSliceByStr(alphabetPath)
 	if len(alphabetSlice) != 1 {
@@ -68,15 +69,16 @@ func New(alphabetPath, tapePath, commandsPath string) *Machine {
 		tape:        tape,
 		commandBase: commandBase,
 		headIndex:   DEFAULT_HEAD_INDEX,
+		resultFile:  resultFile,
 	}
 }
 
 func (m *Machine) Run() {
 	state := "q0"
 	for {
-		fmt.Println(m.GetTapeState())
+		m.print(m.GetTapeState())
 		if state == END_STATE {
-			fmt.Println("Done!")
+			m.print("Done!")
 			break
 		}
 		symbols, ok := m.commandBase[state]
@@ -85,7 +87,7 @@ func (m *Machine) Run() {
 		}
 		currentSym := m.tape[m.headIndex]
 		cmd := symbols[currentSym]
-		fmt.Println(cmd.String())
+		m.print(cmd.String())
 		m.tape[m.headIndex] = cmd.symAfter
 		switch cmd.shiftDirection {
 		case 'R':
@@ -101,52 +103,12 @@ func (m *Machine) Run() {
 		}
 		state = cmd.stateAfter
 	}
-
 }
 
 func (m *Machine) GetTapeState() string {
 	headPos := make([]byte, TAPE_SIZE)
 	headPos[m.headIndex] = '^'
-	return fmt.Sprintf("%s\n%s", string(m.tape), string(headPos))
-	/*
-	var firstTapeSymIndex int
-	var lastTapeSymIndex int
-	for i, sym := range m.tape {
-		if sym != '_' {
-			firstTapeSymIndex = i
-			break
-		}
-	}
-	for i := len(m.tape) - 1; i >= firstTapeSymIndex; i-- {
-		if m.tape[i] != '_' {
-			lastTapeSymIndex = i
-			break
-		}
-	}
-	str1startSpacesLen := firstTapeSymIndex - m.headIndex
-	if str1startSpacesLen < 0 {
-		str1startSpacesLen = 0
-	}
-	str1startSpaces := make([]byte, str1startSpacesLen)
-	for i := range str1startSpaces {
-		str1startSpaces[i] = ' '
-	}
-	str1endSpacesLen := m.headIndex - lastTapeSymIndex
-	if str1endSpacesLen < 0 {
-		str1endSpacesLen = 0
-	}
-	str1endSpaces := make([]byte, str1endSpacesLen)
-	for i := range str1endSpaces {
-		str1endSpaces[i] = ' '
-	}
-	str1 := fmt.Sprintf("%s%s%s", string(str1startSpaces),
-		string(m.tape[firstTapeSymIndex:lastTapeSymIndex+1]),
-		string(str1endSpaces))
-
-	headPos := make([]byte, len(str1))
-	headPos[m.headIndex-firstTapeSymIndex+str1startSpacesLen] = '^'
-	return fmt.Sprintf("%s\n%s", str1, string(headPos))
-	*/
+	return fmt.Sprintf("%s\n%s\n", string(m.tape), string(headPos))
 }
 
 // readFileIntoSliceByStr читает файл построчно в слайс
@@ -163,4 +125,10 @@ func readFileIntoSliceByStr(path string) []string {
 		res = append(res, sc.Text())
 	}
 	return res
+}
+func (m *Machine) print(str string) {
+	fmt.Print(str)
+	if _, err := m.resultFile.WriteString(str); err != nil {
+		log.Fatal(err)
+	}
 }

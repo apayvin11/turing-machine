@@ -67,7 +67,7 @@ func validateState(state string) error {
 }
 
 func(c *Command) String()string {
-	return fmt.Sprintf("%s %c  -->  %s %c %c", 
+	return fmt.Sprintf("%s %c  -->  %s %c %c\n", 
 	c.stateBefore,
 	c.symBefore,
 	c.stateAfter,
