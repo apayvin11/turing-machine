@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const END_STATE = "qz"
+
 type Command struct {
 	stateBefore    string
 	symBefore      byte
@@ -56,7 +58,7 @@ func validateState(state string) error {
 		return fmt.Errorf("invalid command state %s", state)
 	}
 	if _, err := strconv.Atoi(state[1:]); err != nil {
-		if state == "qz" {
+		if state == END_STATE {
 			return nil
 		}
 		return fmt.Errorf("invalid command state %s", state)
