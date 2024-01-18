@@ -16,7 +16,7 @@ const (
 
 type Machine struct {
 	alphabet    []string
-	commandBase map[string]map[byte]*Command
+	commandBase map[string]map[byte]*Command // база команд, вложенный map, key1 - state, key2 - source symbol
 	tape        []byte
 	headIndex   int
 	resultFile  *os.File
@@ -73,6 +73,7 @@ func New(alphabetPath, tapePath, commandsPath string, resultFile *os.File) *Mach
 	}
 }
 
+// Run запускаем машину Тьюринга
 func (m *Machine) Run() {
 	state := "q0"
 	for {
@@ -105,6 +106,7 @@ func (m *Machine) Run() {
 	}
 }
 
+// GetTapeState возвращает текущее состояние ленты с указанием положения головки
 func (m *Machine) GetTapeState() string {
 	headPos := make([]byte, TAPE_SIZE)
 	headPos[m.headIndex] = '^'
@@ -126,6 +128,8 @@ func readFileIntoSliceByStr(path string) []string {
 	}
 	return res
 }
+
+// print выводит переданную строку в stdout и в resultFile
 func (m *Machine) print(str string) {
 	fmt.Print(str)
 	if _, err := m.resultFile.WriteString(str); err != nil {

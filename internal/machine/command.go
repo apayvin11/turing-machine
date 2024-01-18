@@ -16,6 +16,12 @@ type Command struct {
 	shiftDirection byte
 }
 
+// parseCommand парсит переданный прототип команды
+// формат прототипа команды, параметры через запятую: <qi>,<aj>,<qi*>,<aj*>,<dk>
+// qi и qi* - состояние машины до и после выполнения команды
+// aj и aj* - обозреваемый символ в ячейке до и после выполнения
+// dk - символ, указывающий направление сдвига головки (R, L, E)
+// пример прототипа команды: "q0,1,q1,_,R"
 func parseCommand(prototype string) (*Command, error) {
 	params := strings.Split(prototype, ",")
 	if len(params) != 5 {
@@ -66,11 +72,12 @@ func validateState(state string) error {
 	return nil
 }
 
-func(c *Command) String()string {
-	return fmt.Sprintf("%s %c  -->  %s %c %c\n", 
-	c.stateBefore,
-	c.symBefore,
-	c.stateAfter,
-	c.symAfter,
-	c.shiftDirection)
+// String возвращает строку с инфо команды для debug
+func (c *Command) String() string {
+	return fmt.Sprintf("%s %c  -->  %s %c %c\n",
+		c.stateBefore,
+		c.symBefore,
+		c.stateAfter,
+		c.symAfter,
+		c.shiftDirection)
 }
