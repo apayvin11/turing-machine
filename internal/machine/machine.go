@@ -22,6 +22,12 @@ type Machine struct {
 	resultFile  *os.File
 }
 
+// New создает и возвращает новый объект Машины Тьюринга
+// input parrams:
+// alphabetPath - путь к алфавиту (в нем должны быть в символы через пробел, в одну строку)
+// tapePath - путь файлу с входной лентой
+// commandsPath - путь к файлу с командами (каждая команда на отдельной строке)
+// resultFile - путь к файлу для записи результата
 func New(alphabetPath, tapePath, commandsPath string, resultFile *os.File) *Machine {
 	// Reading alphabet
 	alphabetSlice := readFileIntoSliceByStr(alphabetPath)
