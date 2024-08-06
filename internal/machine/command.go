@@ -6,9 +6,12 @@ import (
 	"strings"
 )
 
-const END_STATE = "qz"
+const (
+	startState = "q0"
+	endState   = "qz"
+)
 
-type Command struct {
+type command struct {
 	stateBefore    string
 	symBefore      byte
 	stateAfter     string
@@ -16,25 +19,25 @@ type Command struct {
 	shiftDirection byte
 }
 
-// parseCommand парсит переданный прототип команды
-// формат прототипа команды, параметры через запятую: <qi>,<aj>,<qi*>,<aj*>,<dk>
-// qi и qi* - состояние машины до и после выполнения команды
-// aj и aj* - обозреваемый символ в ячейке до и после выполнения
-// dk - символ, указывающий направление сдвига головки (R, L, E)
-// пример прототипа команды: "q0,1,q1,_,R"
-func parseCommand(prototype string) (*Command, error) {
+// parseCommand parses the passed command prototype
+// command prototype format, parameters separated by commas: <qi>,<aj>,<qi*>,<aj*>,<dk>
+// qi и qi* - machine state before and after command execution
+// aj и aj* - observed character in a cell before and after execution
+// dk - symbol indicating the direction of head shift (R, L, E)
+// command prototype example: "q0,1,q1,_,R"
+func parseCommand(prototype string) (*command, error) {
 	params := strings.Split(prototype, ",")
 	if len(params) != 5 {
 		return nil, fmt.Errorf("invalid command: %s", prototype)
 	}
 	if err := validateState(params[0]); err != nil {
-		return nil, fmt.Errorf("command parsing error: %s", err.Error())
+		return nil, fmt.Errorf("command parsing error: %v", err)
 	}
 	if len(params[1]) != 1 {
 		return nil, fmt.Errorf("command parsing error, invalid src sym %s", params[1])
 	}
 	if err := validateState(params[2]); err != nil {
-		return nil, fmt.Errorf("command parsing error: %s", err.Error())
+		return nil, fmt.Errorf("command parsing error: %v", err)
 	}
 	if len(params[3]) != 1 {
 		return nil, fmt.Errorf("command parsing error, invalid rec sym %s", params[3])
@@ -47,7 +50,7 @@ func parseCommand(prototype string) (*Command, error) {
 	default:
 		return nil, fmt.Errorf("command parsing error, invalid shift direction sym %s", params[4])
 	}
-	return &Command{
+	return &command{
 		stateBefore:    params[0],
 		symBefore:      params[1][0],
 		stateAfter:     params[2],
@@ -64,7 +67,7 @@ func validateState(state string) error {
 		return fmt.Errorf("invalid command state %s", state)
 	}
 	if _, err := strconv.Atoi(state[1:]); err != nil {
-		if state == END_STATE {
+		if state == endState {
 			return nil
 		}
 		return fmt.Errorf("invalid command state %s", state)
@@ -72,8 +75,8 @@ func validateState(state string) error {
 	return nil
 }
 
-// String возвращает строку с инфо команды для debug
-func (c *Command) String() string {
+// String returns a string with command info for debug
+func (c *command) String() string {
 	return fmt.Sprintf("%s %c  -->  %s %c %c\n",
 		c.stateBefore,
 		c.symBefore,
