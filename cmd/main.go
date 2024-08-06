@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/apayvin11/turing-machine/internal/machine"
 	"log"
 	"os"
+
+	"github.com/apayvin11/turing-machine/internal/machine"
 )
 
 const (
@@ -24,7 +25,13 @@ func main() {
 	}
 	defer resultFile.Close()
 
-	machine, err := machine.New(alphabetPath, tapePath, commandsPath, resultFile)
+	printFunc := func(str string) error {
+		fmt.Print(str)
+		_, err := resultFile.WriteString(str)
+		return err
+	}
+
+	machine, err := machine.New(alphabetPath, tapePath, commandsPath, printFunc)
 	if err != nil {
 		log.Fatal(err)
 	}
